@@ -7,8 +7,8 @@ elseif Config.Framework == 'esx' then
 end
 
 local spawnedNPCs = {}
-local zoneActive = false  -- Tambahkan variabel ini untuk memeriksa status zona
-local interactedNPCs = {}  -- Tabel untuk melacak NPC yang sudah di-interaksi
+local zoneActive = false  
+local interactedNPCs = {} 
 
 local function spawnNPC(location)
     local modelHash = GetHashKey(Config.NPC.model)
@@ -31,12 +31,12 @@ end
 
 local function handleNPCRespawn()
     Wait(Config.NPC.respawnTime)
-    if not zoneActive then return end -- Hindari respawn jika zona tidak aktif
+    if not zoneActive then return end 
 
     if getPlayersInZone(Config.Zone.location, Config.Zone.radius) > 0 then
         spawnZoneNPC()
     else
-        zoneActive = false -- Matikan zona jika tidak ada pemain
+        zoneActive = false 
     end
 end
 
@@ -48,23 +48,19 @@ function despawnNPC(ped)
     end
 end
 
-local npcInteractions = {}  -- Menyimpan jumlah interaksi per NPC
+local npcInteractions = {} 
 
 function handleNPCInteraction(ped)
     local playerPed = PlayerPedId()
 
-    -- Mendapatkan ID jaringan NPC untuk menyimpan jumlah interaksi
     local npcNetworkId = NetworkGetNetworkIdFromEntity(ped)
     
-    -- Inisialisasi jumlah interaksi jika belum ada
     if not npcInteractions[npcNetworkId] then
         npcInteractions[npcNetworkId] = 0
     end
     
-    -- Update jumlah interaksi
     npcInteractions[npcNetworkId] = npcInteractions[npcNetworkId] + 1
 
-    -- Jika sudah 2 kali interaksi, tampilkan notifikasi
     if npcInteractions[npcNetworkId] >= 2 then
         if Config.Notify == 'qb' then
             TriggerEvent('QBCore:Notify', 'DO NOT SPAM MY SWEET!', 'info')
@@ -72,11 +68,9 @@ function handleNPCInteraction(ped)
             exports.ox_lib:notify({title = 'ATTENTION', description = 'DO NOT SPAM MY SWEET!', type = 'info'})
         end
 
-        -- Reset jumlah interaksi setelah notifikasi
         npcInteractions[npcNetworkId] = 0
     end
 
-    -- Pastikan NPC ada sebelum melanjutkan
     if not DoesEntityExist(ped) then
         print("NPC no longer exists.")
         return
@@ -104,7 +98,6 @@ function handleNPCInteraction(ped)
     TaskPlayAnim(playerPed, dict, flag, 8.0, -8.0, 1500, 49, 0, false, false, false)
     Wait(1500)
 
-    -- Pastikan NPC ada sebelum memanggil event
     if DoesEntityExist(ped) then
         TriggerServerEvent('dhito_drugsell:exchange', NetworkGetNetworkIdFromEntity(ped))
     end
@@ -162,7 +155,7 @@ function spawnZoneNPC()
         return
     end
 
-    zoneActive = true -- Tandai zona sebagai aktif
+    zoneActive = true 
     local spawnCount = math.max(0, math.random(dynamicMinCount, math.max(dynamicMaxCount - #spawnedNPCs, dynamicMinCount)))
 
     for i = 1, spawnCount do
@@ -182,7 +175,7 @@ function spawnZoneNPC()
                         local npcCoords = GetEntityCoords(ped)
                         local playerCoords = GetEntityCoords(playerPed)
                         local distance = #(playerCoords - npcCoords)
-                        return distance <= 1.5 and not interactedNPCs[NetworkGetNetworkIdFromEntity(ped)]  -- Hanya bisa di-interaksi jika belum
+                        return distance <= 1.5 and not interactedNPCs[NetworkGetNetworkIdFromEntity(ped)]  
                     end,
                     onSelect = function()
                         handleNPCInteraction(ped)
